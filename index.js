@@ -13,6 +13,7 @@ function getClient() {
 	});
 }
 
+
 app.get("/students", (req, res) => {
 	const client = getClient();
 
