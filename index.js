@@ -91,8 +91,7 @@ app.put("/students/:id", bodyParser.json(), (req, res) => {
 	const editedStudent = {
 		firstName: req.body.firstName,
 		lastName: req.body.lastName,
-		birthYear: req.body.birthYear,
-		grades: req.body.grades
+		birthYear: req.body.birthYear
 	};
 
 	const id = getId(req.params.id);
@@ -137,5 +136,35 @@ app.delete('/students/:id', bodyParser.json(), (req, res) => {
 		client.close();
 	});
 });
+
+
+// Add grades
+app.post('/grades', bodyParser.json(), (req, res) => {  
+	const newGrade = {
+		grades: req.body.grades,
+	};
+
+	const id = getId(req.body.id);
+	if (!id) {
+		res.send({error: 'Invalid id'});
+		return;
+	}
+	const client = getClient();
+	client.connect(async err => {
+		const collection = client.db("school_app").collection("students");
+		const result = await collection.findOneAndUpdate(
+			{_id: id},
+			{},
+			{returnDocument: "after"}
+		);
+		if (!result.ok) {
+			res.send({error: 'Not found'});
+			return;
+		}
+		res.send(result.value);
+		client.close();
+	});
+});
+
 
 app.listen(3000);
