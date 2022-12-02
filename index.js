@@ -3,6 +3,7 @@ const app = express();
 const ObjectId = require("mongodb").ObjectId;
 const bodyParser = require("body-parser");
 
+
 function getClient() {
 	const { MongoClient, ServerApiVersion } = require("mongodb");
 	const uri ="mongodb+srv://testUser2:kuP0HsONJY4tD2Pb@cluster0.gev7m7p.mongodb.net/?retryWrites=true&w=majority";
@@ -14,6 +15,17 @@ function getClient() {
 }
 
 
+function getId(raw) {
+	try {
+		return new ObjectId(raw);
+	}
+	catch(e) {
+		return ''
+	}
+}
+
+
+// Read
 app.get("/students", (req, res) => {
 	const client = getClient();
 
@@ -27,6 +39,30 @@ app.get("/students", (req, res) => {
 });
 
 
+// Read by Id
+app.get('/students/:id', (req, res) => {
+	const id = getId(req.params.id);
+	if(!id) {
+		res.send({error: 'Invalid id'});
+		return
+	}
+
+	const client = getClient();
+	client.connect(async (err) => {
+		const collection = client.db("school_app").collection("students");
+		// perform actions on the collection object
+		const student = await collection.findOne({_id: id})
+		if (!student) {
+			res.send({error: 'Not found'});
+			return;
+		}
+		res.send(student);
+		client.close();
+	});
+})
+
+
+// Create
 app.post("/students", bodyParser.json(), (req, res) => { 
 	const newStudent = {
 		firstName: req.body.firstName,
@@ -50,12 +86,13 @@ app.post("/students", bodyParser.json(), (req, res) => {
 });
 
 
+// Update
 app.put("/students/:id", bodyParser.json(), (req, res) => { 
 	const editedStudent = {
 		firstName: req.body.firstName,
 		lastName: req.body.lastName,
 		birthYear: req.body.birthYear,
-		grades: []
+		grades: req.body.grades
 	};
 
 	const id = getId(req.params.id);
@@ -78,5 +115,27 @@ app.put("/students/:id", bodyParser.json(), (req, res) => {
 	});
 });
 
+
+// Delete
+app.delete('/students/:id', bodyParser.json(), (req, res) => {
+	const id = getId(req.params.id);
+	if (!id) {
+		res.send({error: 'Invalid id'});
+		return;
+	}
+
+	const client = getClient();
+	client.connect( async (err) => {
+		const collection = client.db("school_app").collection("students");
+		// perform actions on the collection object
+		const result = await collection.deleteOne({_id: id});
+		if (!result.deletedCount) {
+			res.send({error: 'Not found'});
+			return;
+		}
+		res.send({_id: id});
+		client.close();
+	});
+});
 
 app.listen(3000);
