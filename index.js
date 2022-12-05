@@ -140,9 +140,7 @@ app.delete('/students/:id', bodyParser.json(), (req, res) => {
 
 // Add grades
 app.post('/grades', bodyParser.json(), (req, res) => {  
-	const newGrade = {
-		grades: req.body.grades,
-	};
+	const newGrades = req.body.grades;
 
 	const id = getId(req.body.id);
 	if (!id) {
@@ -154,7 +152,7 @@ app.post('/grades', bodyParser.json(), (req, res) => {
 		const collection = client.db("school_app").collection("students");
 		const result = await collection.findOneAndUpdate(
 			{_id: id},
-			{},
+			{ $push: { grades: { $each: newGrades } } },
 			{returnDocument: "after"}
 		);
 		if (!result.ok) {
