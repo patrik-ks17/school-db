@@ -4,6 +4,15 @@ const ObjectId = require("mongodb").ObjectId;
 const bodyParser = require("body-parser");
 
 
+const cors = require('cors');
+
+app.use(cors({
+	origin : 'http://localhost:3000',
+	credentials: true,
+	methods: 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+	headers: 'Origin, Pragma, Cache-control, X-Requested-With, Content-Type, Accept, Authorization'
+}));
+
 function getClient() {
 	const { MongoClient, ServerApiVersion } = require("mongodb");
 	const uri ="mongodb+srv://testUser2:kuP0HsONJY4tD2Pb@cluster0.gev7m7p.mongodb.net/?retryWrites=true&w=majority";
@@ -165,4 +174,4 @@ app.post('/grades', bodyParser.json(), (req, res) => {
 });
 
 
-app.listen(3000);
+app.listen(9000);
